@@ -1,0 +1,2 @@
+experiment,model,features,folds,alpha,status,notes
+m3_resnet18_ridge_baseline,ResNet18_frozen_Ridge,512d_ImageNet_embeddings,5,1.0,completed,Leakage-safe OOF with deterministic fallback for unavailable images
