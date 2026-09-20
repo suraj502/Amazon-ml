@@ -112,7 +112,7 @@ def get_image_metadata(reference):
     """Read basic metadata from a local image.
 
     Returns:
-        dict containing validation status and image metadata.
+        dict: Validation status and image metadata.
     """
     validation = validate_image_reference(reference)
 
@@ -126,6 +126,7 @@ def get_image_metadata(reference):
         "aspect_ratio": None,
         "format": None,
         "mode": None,
+        "file_size_bytes": None,
     }
 
     if not validation["valid"] or validation["kind"] != "local":
@@ -143,6 +144,9 @@ def get_image_metadata(reference):
                     "aspect_ratio": width / height if height else None,
                     "format": image.format,
                     "mode": image.mode,
+                    "file_size_bytes": Path(
+                        validation["reference"]
+                    ).stat().st_size,
                 }
             )
 
@@ -170,4 +174,5 @@ def preprocess_image(image, image_size=224):
         raise ValueError("image_size must be a positive integer.")
 
     image = image.convert("RGB")
+
     return image.resize((image_size, image_size))

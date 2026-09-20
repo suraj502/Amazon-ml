@@ -31,6 +31,7 @@ def analyze_image_references(dataframe, image_column):
     references = dataframe[image_column]
 
     total = len(references)
+
     missing = 0
     valid = 0
     invalid = 0
@@ -39,6 +40,8 @@ def analyze_image_references(dataframe, image_column):
     widths = []
     heights = []
     aspect_ratios = []
+    file_sizes = []
+
     formats = Counter()
     local_references = []
 
@@ -69,6 +72,9 @@ def analyze_image_references(dataframe, image_column):
         if metadata["aspect_ratio"] is not None:
             aspect_ratios.append(metadata["aspect_ratio"])
 
+        if metadata["file_size_bytes"] is not None:
+            file_sizes.append(metadata["file_size_bytes"])
+
         if metadata["format"]:
             formats[metadata["format"]] += 1
 
@@ -95,6 +101,15 @@ def analyze_image_references(dataframe, image_column):
         "aspect_ratio": {
             "min": min(aspect_ratios) if aspect_ratios else None,
             "max": max(aspect_ratios) if aspect_ratios else None,
+        },
+        "file_size": {
+            "min_bytes": min(file_sizes) if file_sizes else None,
+            "max_bytes": max(file_sizes) if file_sizes else None,
+            "average_bytes": (
+                sum(file_sizes) / len(file_sizes)
+                if file_sizes
+                else None
+            ),
         },
         "formats": dict(formats),
         "duplicates": {
@@ -142,6 +157,12 @@ def save_markdown_report(report, output_path):
         f"- Minimum: {report['aspect_ratio']['min']}",
         f"- Maximum: {report['aspect_ratio']['max']}",
         "",
+        "## File Size",
+        "",
+        f"- Minimum bytes: {report['file_size']['min_bytes']}",
+        f"- Maximum bytes: {report['file_size']['max_bytes']}",
+        f"- Average bytes: {report['file_size']['average_bytes']}",
+        "",
         "## Image Formats",
         "",
     ]
@@ -157,10 +178,14 @@ def save_markdown_report(report, output_path):
             "",
             "## Duplicates",
             "",
-            f"- Duplicate groups: "
-            f"{len(report['duplicates']['duplicate_groups'])}",
-            f"- Images belonging to duplicate groups: "
-            f"{report['duplicates']['duplicate_image_count']}",
+            (
+                "- Duplicate groups: "
+                f"{len(report['duplicates']['duplicate_groups'])}"
+            ),
+            (
+                "- Images belonging to duplicate groups: "
+                f"{report['duplicates']['duplicate_image_count']}"
+            ),
         ]
     )
 
