@@ -154,3 +154,14 @@ def test_features_can_be_disabled():
         "price",
         "constant",
     ]
+
+def test_id_is_preserved_when_constant_feature_removal_is_enabled():
+    data = pd.DataFrame({
+        "id": ["1", "1"],
+        "price": [10, 20],
+    })
+
+    features = build_features(data)
+
+    assert "id" in features.columns
+    assert features["id"].tolist() == ["1", "1"]

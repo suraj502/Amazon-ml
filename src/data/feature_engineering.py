@@ -65,6 +65,7 @@ def build_features(
     add_datetime_features=True,
     remove_constant_features=True,
     remove_duplicate_columns=True,
+    protected_columns=("id",),
 ) -> pd.DataFrame:
     """
     Build shared, leakage-safe M1 features.
@@ -97,6 +98,14 @@ def build_features(
     if remove_constant_features:
         constant_columns = _find_constant_columns(features)
 
+        protected_columns = set(protected_columns)
+
+        constant_columns = [
+            column
+            for column in constant_columns
+            if column not in protected_columns
+        ]
+
         if constant_columns:
             features = features.drop(
                 columns=constant_columns
@@ -109,3 +118,5 @@ def build_features(
         features = _add_datetime_features(features)
 
     return features
+
+
