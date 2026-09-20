@@ -182,7 +182,11 @@ def run(config_path: str = "config/config.yaml") -> dict:
         "structured_output": str(structured_path),
         "oof_score": metric_score,
     }
-    write_report(report, "reports/m2_text_report.json", "reports/m2_text_report.md")
+    write_report(
+        report,
+        reports_dir / "m2_text_report.json",
+        reports_dir / "m2_text_report.md",
+    )
     return report
 
 

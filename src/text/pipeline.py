@@ -16,6 +16,7 @@ from src.utils.cv_split import validate_folds
 
 
 _NUMBER = r"(?P<value>\d+(?:[.,]\d+)?)"
+_NUMBER_PATTERN = r"\d+(?:[.,]\d+)?"
 _UNIT = r"(?P<unit>[a-zA-Zµ]+)"
 _UNIT_WORDS = {
     "kg", "g", "mg", "lb", "lbs", "oz", "ml", "l", "cl", "dl",
@@ -133,7 +134,12 @@ def extract_structured_features(
         if fields.get("volume_unit", {}).get("enabled", False):
             row["volume_unit"] = weight[1] if weight and weight[1] in {"ml", "l", "cl", "dl"} else ""
         if fields.get("dimensions", {}).get("enabled", False):
-            dimensions = re.search(rf"{_NUMBER}\s*[x×]\s*{_NUMBER}(?:\s*[x×]\s*{_NUMBER})?\s*{_UNIT}?", value, re.IGNORECASE)
+            dimensions = re.search(
+                rf"{_NUMBER_PATTERN}\s*[x×]\s*{_NUMBER_PATTERN}"
+                rf"(?:\s*[x×]\s*{_NUMBER_PATTERN})?\s*{_UNIT}?",
+                value,
+                re.IGNORECASE,
+            )
             row["dimensions"] = dimensions.group(0) if dimensions else ""
         if fields.get("numeric_count", {}).get("enabled", False):
             row["numeric_count"] = len(re.findall(r"\d+(?:[.,]\d+)?", value))
@@ -166,7 +172,13 @@ def load_dataset(path: str | Path, config: dict) -> pd.DataFrame:
     input_path = Path(path)
     if not input_path.is_file():
         raise FileNotFoundError(f"Dataset file does not exist: {input_path}")
-    data = pd.read_csv(input_path, encoding=config["data"].get("encoding", "utf-8-sig"))
+    id_column = config.get("task", {}).get("id_column")
+    dtype = {id_column: str} if id_column else None
+    data = pd.read_csv(
+        input_path,
+        encoding=config["data"].get("encoding", "utf-8-sig"),
+        dtype=dtype,
+    )
     if config["data"].get("strip_header_whitespace", True):
         data.columns = [str(column).strip() for column in data.columns]
     return data
