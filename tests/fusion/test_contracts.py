@@ -16,7 +16,7 @@ from src.utils.prediction_contract import (
 )
 
 
-FIXTURE_DIR = Path(__file__).parent / "fixtures" / "m4"
+FIXTURE_DIR = Path(__file__).parents[1] / "fixtures" / "m4"
 REGRESSION_TASK = {"type": "regression", "id_column": "id"}
 BINARY_TASK = {"type": "binary_classification", "id_column": "id"}
 MULTICLASS_TASK = {

@@ -203,4 +203,5 @@ def validate_shared_folds(config: dict, train_ids: pd.Series) -> dict[str, int]:
         train_ids,
         config["validation"]["n_folds"],
         warn_small_fold_size=config["validation"].get("warn_small_fold_size"),
+        min_valid_folds=config["validation"].get("min_valid_folds"),
     )

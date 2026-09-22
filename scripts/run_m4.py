@@ -3,7 +3,11 @@
 import argparse
 import csv
 import json
+import sys
 from pathlib import Path
+
+# Make the repository package importable when this script is launched from any directory.
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from src.fusion.final_model import configured_submission_path, run_m4
 from src.utils.config import load_config

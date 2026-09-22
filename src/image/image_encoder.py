@@ -1,14 +1,18 @@
 """Pretrained image encoder utilities for M3."""
 
 import numpy as np
-import torch
-from torchvision.models import ResNet18_Weights, resnet18
 
 
 class ResNet18ImageEncoder:
     """Frozen pretrained ResNet18 used as an image feature extractor."""
 
     def __init__(self, device=None):
+        try:
+            import torch
+            from torchvision.models import ResNet18_Weights, resnet18
+        except ImportError as exc:
+            raise ImportError("PyTorch and torchvision are required for image embeddings. Install requirements.txt.") from exc
+        self._torch = torch
         self.device = device or (
             "cuda" if torch.cuda.is_available() else "cpu"
         )
@@ -18,7 +22,7 @@ class ResNet18ImageEncoder:
         self.model = resnet18(weights=self.weights)
 
         # Remove the classification head.
-        self.model.fc = torch.nn.Identity()
+        self.model.fc = self._torch.nn.Identity()
 
         self.model.to(self.device)
         self.model.eval()
@@ -39,7 +43,7 @@ class ResNet18ImageEncoder:
         image_tensor = self.preprocess(image)
         image_tensor = image_tensor.unsqueeze(0).to(self.device)
 
-        with torch.no_grad():
+        with self._torch.no_grad():
             embedding = self.model(image_tensor)
 
         return embedding.squeeze(0).cpu().numpy()
@@ -49,11 +53,11 @@ class ResNet18ImageEncoder:
         if not images:
             return np.empty((0, self.embedding_dim), dtype=np.float32)
 
-        image_tensors = torch.stack(
+        image_tensors = self._torch.stack(
             [self.preprocess(image) for image in images]
         ).to(self.device)
 
-        with torch.no_grad():
+        with self._torch.no_grad():
             embeddings = self.model(image_tensors)
 
         return embeddings.cpu().numpy().astype(np.float32)

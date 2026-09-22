@@ -7,9 +7,6 @@ It provides reusable helpers for validating and loading image references.
 from pathlib import Path
 from urllib.parse import urlparse
 
-from PIL import Image, UnidentifiedImageError
-
-
 SUPPORTED_URL_SCHEMES = {"http", "https"}
 
 
@@ -86,6 +83,11 @@ def load_image(reference):
         ImageValidationError: If the reference is missing, unsupported,
             or the image cannot be opened.
     """
+    try:
+        from PIL import Image, UnidentifiedImageError
+    except ImportError as exc:
+        raise ImageValidationError("Pillow is required to load images. Install requirements.txt.") from exc
+
     validation = validate_image_reference(reference)
 
     if not validation["valid"]:
@@ -114,6 +116,11 @@ def get_image_metadata(reference):
     Returns:
         dict: Validation status and image metadata.
     """
+    try:
+        from PIL import Image, UnidentifiedImageError
+    except ImportError as exc:
+        raise ImageValidationError("Pillow is required to inspect images. Install requirements.txt.") from exc
+
     validation = validate_image_reference(reference)
 
     result = {
@@ -167,6 +174,11 @@ def preprocess_image(image, image_size=224):
     The actual model-specific preprocessing will be added later.
     For now this performs only deterministic resizing and RGB conversion.
     """
+    try:
+        from PIL import Image
+    except ImportError as exc:
+        raise ImageValidationError("Pillow is required to preprocess images. Install requirements.txt.") from exc
+
     if not isinstance(image, Image.Image):
         raise ImageValidationError("Expected a PIL Image object.")
 

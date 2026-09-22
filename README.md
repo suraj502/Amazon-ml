@@ -58,6 +58,14 @@ predictions/test/<model>_test.csv
 
 No fake competition predictions, folds, reports, or submissions have been created. `TARGET_COLUMN` remains a placeholder until the real dataset arrives. PyYAML is declared in `requirements.txt` but has not been installed.
 
+## Pipeline Files
+
+- [scripts/run_all.py](scripts/run_all.py): runs M1, M2, M3, and M4 in order after validating inputs.
+- [scripts/run_m1.py](scripts/run_m1.py): tabular baseline and M1 OOF/test artifacts.
+- [scripts/run_m2.py](scripts/run_m2.py): TF-IDF text baseline and M2 OOF/test artifacts.
+- [scripts/run_m3.py](scripts/run_m3.py): image embedding baseline and M3 OOF/test artifacts.
+- [scripts/run_m4.py](scripts/run_m4.py): fusion, validation, and final submission.
+
 ## M4 Files
 
 - [src/fusion/analysis.py](src/fusion/analysis.py): individual scoring and error analysis.
@@ -95,9 +103,17 @@ All official prediction files use the original target scale. M4 does not guess o
 ```text
 data/                 # Competition data, kept outside the pre-hackathon fixtures
 config/config.yaml    # Shared configuration
+src/data/             # Shared loading, validation, preprocessing, and features
+src/tabular/          # M1 tabular models and preprocessing
+src/text/             # M2 text preparation and model components
+src/image/            # M3 image loading, embeddings, and prediction components
 src/fusion/           # M4 implementation
-src/utils/            # Shared M4 utilities
-tests/fixtures/m4/    # Synthetic test fixtures only
+src/utils/            # Shared configuration, metrics, folds, and contracts
+tests/data/            # Data loading and feature tests
+tests/text/            # M2 text tests
+tests/fusion/          # M4 fusion tests by responsibility
+tests/integration/     # Cross-stage contract tests
+tests/fixtures/m4/     # Synthetic test fixtures only
 predictions/oof/      # Real M1/M2/M3 OOF predictions after September 25
 predictions/test/     # Real M1/M2/M3 test predictions after September 25
 folds/                # Real shared folds after September 25
@@ -140,7 +156,18 @@ py scripts/run_m4.py --config config/config.yaml
 Run the complete pre-hackathon test suite:
 
 ```powershell
+py -m pytest -q
+```
+
+Run only the standard-library `unittest` subset:
+
+```powershell
 py -m unittest discover -s tests -p "test*.py" -v
+```
+
+Run static checks:
+
+```powershell
 py -m compileall src tests scripts
 git diff --check
 ```

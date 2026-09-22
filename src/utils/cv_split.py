@@ -9,7 +9,14 @@ class FoldValidationError(ValueError):
     """Raised when the shared fold file violates its contract."""
 
 
-def validate_folds(path, expected_ids, n_folds, oof_ids=None, warn_small_fold_size=None):
+def validate_folds(
+    path,
+    expected_ids,
+    n_folds,
+    oof_ids=None,
+    warn_small_fold_size=None,
+    min_valid_folds=None,
+):
     """Validate and return ``id -> fold`` without creating any folds."""
     fold_path = Path(path)
     if not fold_path.is_file():
@@ -39,6 +46,13 @@ def validate_folds(path, expected_ids, n_folds, oof_ids=None, warn_small_fold_si
         raise FoldValidationError(f"Fold ID mismatch; missing={sorted(missing)}, extra={sorted(extra)}")
     if oof_ids is not None and {_normalize_id(value) for value in oof_ids} != set(folds):
         raise FoldValidationError("Fold IDs do not match OOF prediction IDs")
+    if min_valid_folds is not None:
+        valid_fold_count = len(set(folds.values()))
+        if valid_fold_count < min_valid_folds:
+            raise FoldValidationError(
+                f"Only {valid_fold_count} valid folds are present; "
+                f"at least {min_valid_folds} are required"
+            )
     if warn_small_fold_size:
         counts = {fold: list(folds.values()).count(fold) for fold in range(n_folds)}
         for fold, count in counts.items():

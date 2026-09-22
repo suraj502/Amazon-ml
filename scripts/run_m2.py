@@ -89,7 +89,16 @@ def _prediction_frame(ids, predictions, config):
 
 
 def run(config_path: str = "config/config.yaml") -> dict:
-    config = load_config(config_path)
+    config_file = Path(config_path).resolve()
+    root = config_file.parent.parent
+    config = load_config(config_file)
+    config["data"]["train_path"] = str(root / config["data"]["train_path"])
+    config["data"]["test_path"] = str(root / config["data"]["test_path"])
+    config["validation"]["folds_path"] = str(root / config["validation"]["folds_path"])
+    config["text"]["structured_extraction"]["output_path"] = str(root / config["text"]["structured_extraction"]["output_path"])
+    config["prediction"]["oof_dir"] = str(root / config["prediction"]["oof_dir"])
+    config["prediction"]["test_dir"] = str(root / config["prediction"]["test_dir"])
+    config["paths"]["reports"] = str(root / config["paths"]["reports"])
     train = load_dataset(config["data"]["train_path"], config)
     test = load_dataset(config["data"]["test_path"], config)
     id_column = config["task"]["id_column"]

@@ -36,36 +36,40 @@ def compare_candidates(predictions, targets, folds, config):
             [model],
         )
 
-    simple_values = simple_average(vectors)
-    candidates["simple_average"] = _candidate(
-        "simple_average",
-        "simple_average",
-        evaluate_predictions([targets[identifier] for identifier in ids], simple_values, config),
-        _fold_scores(simple_values, ids, targets, folds, config),
-        None,
-        list(predictions),
-    )
-    weighted = fit_weighted_blend(vectors, list(targets[identifier] for identifier in ids), config)
-    candidates["weighted_blend"] = _candidate(
-        "weighted_blend",
-        "weighted_blend",
-        weighted["score"],
-        _fold_scores(weighted["predictions"], ids, targets, folds, config),
-        None,
-        list(predictions),
-        weights=weighted["weights"],
-        status=weighted["status"],
-    )
-    ridge = nested_ridge_evaluation(predictions, targets, folds, config)
-    candidates["ridge"] = _candidate(
-        "ridge",
-        "ridge",
-        ridge["overall_score"],
-        ridge["fold_scores"],
-        ridge["fold_std"],
-        list(predictions),
-        alpha=ridge["alpha"],
-    )
+    methods = config.get("fusion", {}).get("candidate_methods", {})
+    if methods.get("simple_average", {}).get("enabled", True):
+        simple_values = simple_average(vectors)
+        candidates["simple_average"] = _candidate(
+            "simple_average",
+            "simple_average",
+            evaluate_predictions([targets[identifier] for identifier in ids], simple_values, config),
+            _fold_scores(simple_values, ids, targets, folds, config),
+            None,
+            list(predictions),
+        )
+    if methods.get("weighted_blend", {}).get("enabled", True):
+        weighted = fit_weighted_blend(vectors, list(targets[identifier] for identifier in ids), config)
+        candidates["weighted_blend"] = _candidate(
+            "weighted_blend",
+            "weighted_blend",
+            weighted["score"],
+            _fold_scores(weighted["predictions"], ids, targets, folds, config),
+            None,
+            list(predictions),
+            weights=weighted["weights"],
+            status=weighted["status"],
+        )
+    if methods.get("ridge", {}).get("enabled", True) and config.get("fusion", {}).get("ridge", {}).get("enabled", True):
+        ridge = nested_ridge_evaluation(predictions, targets, folds, config)
+        candidates["ridge"] = _candidate(
+            "ridge",
+            "ridge",
+            ridge["overall_score"],
+            ridge["fold_scores"],
+            ridge["fold_std"],
+            list(predictions),
+            alpha=ridge["alpha"],
+        )
     return {"individual_analysis": individual_report, "candidates": candidates}
 
 

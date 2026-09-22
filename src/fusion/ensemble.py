@@ -44,7 +44,10 @@ def weighted_average(predictions, weights):
 def optimize_weights(predictions, targets, config, blend_space=None):
     """Optimize simplex weights deterministically using OOF predictions only."""
     vectors = _validate_vectors(predictions)
-    targets = [float(value) for value in targets]
+    if config["task"]["type"] == "multiclass_classification":
+        targets = list(targets)
+    else:
+        targets = [float(value) for value in targets]
     if len(targets) != len(next(iter(vectors.values()))):
         raise ValueError("Targets and prediction rows must have the same length")
     space = blend_space or config.get("fusion", {}).get("prediction_space", {}).get("default", "raw")
@@ -72,7 +75,8 @@ def optimize_weights(predictions, targets, config, blend_space=None):
                 break
             weights = updated
         result = weighted_average(transformed, weights)
-        if not all(math.isfinite(value) for value in weights + result):
+        result_values = [item for row in result for item in _normalize_row(row)]
+        if not all(math.isfinite(value) for value in weights + result_values):
             raise ArithmeticError("optimizer produced non-finite values")
         return {"weights": dict(zip(models, weights)), "status": "success", "blend_space": space}
     except (ArithmeticError, ValueError, ZeroDivisionError) as exc:

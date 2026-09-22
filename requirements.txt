@@ -3,3 +3,9 @@ pandas
 numpy
 scipy
 scikit-learn
+Pillow
+lightgbm
+xgboost
+torch
+torchvision
+pytest

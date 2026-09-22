@@ -5,7 +5,7 @@ from src.fusion.stacking import nested_ridge_evaluation, predict_with_meta_model
 from src.utils.prediction_contract import load_prediction_file
 
 
-FIXTURE_DIR = Path(__file__).parent / "fixtures" / "m4"
+FIXTURE_DIR = Path(__file__).parents[1] / "fixtures" / "m4"
 CONFIG = {
     "task": {"type": "regression", "id_column": "id"},
     "metric": {"name": "RMSE", "direction": "minimize"},

@@ -3,8 +3,6 @@
 from __future__ import annotations
 
 import numpy as np
-import lightgbm as lgb
-import xgboost as xgb
 
 
 def train_advanced_model(
@@ -25,6 +23,10 @@ def train_advanced_model(
         raise ValueError("Cannot train on empty data")
 
     if model_type == "lightgbm":
+        try:
+            import lightgbm as lgb
+        except ImportError as exc:
+            raise ImportError("LightGBM is required for model_type='lightgbm'. Install requirements.txt.") from exc
         model = lgb.LGBMRegressor(
             objective="regression",
             n_estimators=300,
@@ -37,6 +39,10 @@ def train_advanced_model(
             verbosity=-1,
         )
     elif model_type == "xgboost":
+        try:
+            import xgboost as xgb
+        except ImportError as exc:
+            raise ImportError("XGBoost is required for model_type='xgboost'. Install requirements.txt.") from exc
         model = xgb.XGBRegressor(
             objective="reg:squarederror",
             n_estimators=300,
